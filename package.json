@@ -14,17 +14,13 @@
     "preview": "vite preview",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "make-mac": "npm run build && npm run clean-rebuild && electron-forge make --platform=darwin",
-    "make-win": "npm run build && npm run clean-rebuild && electron-forge make --platform=win32",
-    "make-all": "npm run build && npm run clean-rebuild && electron-forge make",
+    "make-mac": "npm run build && npm run rebuild-native && electron-forge make --platform=darwin",
+    "make-win": "npm run build && npm run rebuild-native && electron-forge make --platform=win32",
+    "make-all": "npm run build && npm run rebuild-native && electron-forge make",
     "electron": "electron .",
     "start": "concurrently \"vite\" \"wait-on http://localhost:3000 && electron .\"",
-    "rebuild-native": "electron-rebuild -f -w nfc-pcsc --arch=arm64",
-    "clean-rebuild": "npm run clean && npm install && npm run rebuild-native",
-    "clean": "rm -rf node_modules/.cache && rm -rf out",
-    "postinstall": "npm run rebuild-native",
-    "debug-modules": "find node_modules -name 'nfc-pcsc' -type d",
-    "test-nfc": "node -e \"import('nfc-pcsc').then(m => console.log('NFC module loaded:', !!m.NFC)).catch(e => console.error('Failed:', e.message))\""
+    "rebuild-native": "electron-rebuild -f -w nfc-pcsc",
+    "postinstall": "npm run rebuild-native"
   },
   "dependencies": {
     "@anthropic-ai/claude-code": "^1.0.68",
@@ -62,11 +58,5 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
     "vite": "^7.0.4"
-  },
-  "build": {
-    "asarUnpack": [
-      "**/node_modules/nfc-pcsc/**/*",
-      "**/node_modules/@serialport/**/*"
-    ]
   }
 }

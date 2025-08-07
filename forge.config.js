@@ -4,74 +4,52 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 export default {
   packagerConfig: {
     asar: {
-      unpack: "**/node_modules/{nfc-pcsc,@serialport,bindings,prebuild-install}/**/*"
+      unpack: "**/{nfc-pcsc,@serialport}/**"
     },
     name: 'NFC Electron App',
     executableName: 'nfc-app',
+    // macOS specific options
     appBundleId: 'com.muhammadahmad.nfcapp',
     appCategoryType: 'public.app-category.utilities',
-    // Don't ignore node_modules for native modules
-    ignore: [
-      /\.git/, 
-      /src/,
-      // Only ignore non-essential node_modules, keep native dependencies
-      /node_modules\/(?!nfc-pcsc|@serialport|bindings|prebuild-install|detect-libc|fs-minipass|minipass|tar|chownr|mkdirp)/
-    ],
-    // Ensure proper permissions for native modules on macOS
-    osxSign: false, // Disable code signing for now
+    ignore: [/\.git/, /node_modules\/(?!(nfc-pcsc|@serialport))/, /src/],
+    // Ensure native modules are properly included
     afterCopy: [(buildPath, electronVersion, platform, arch, callback) => {
       console.log(`Packaging for ${platform}-${arch}`);
       console.log(`Build path: ${buildPath}`);
-      
-      // For macOS, ensure proper permissions
-      if (platform === 'darwin') {
-        const { exec } = require('child_process');
-        const path = require('path');
-        
-        // Set executable permissions for native binaries
-        const nativeModulesPath = path.join(buildPath, 'node_modules');
-        exec(`find "${nativeModulesPath}" -name "*.node" -exec chmod +x {} \\;`, (error) => {
-          if (error) {
-            console.warn('Warning: Could not set permissions for native modules:', error.message);
-          }
-          callback();
-        });
-      } else {
-        callback();
-      }
+      callback();
     }],
   },
   rebuildConfig: {
-    buildFromSource: true,
+    buildFromSource: false,
     onlyModules: ['nfc-pcsc'],
-    force: true,
   },
   makers: [
+    // Windows makers
     {
       name: '@electron-forge/maker-zip',
-      platforms: ['win32', 'darwin']
+      platforms: ['win32']
     },
     {
       name: '@electron-forge/maker-squirrel',
-      platforms: ['win32'],
       config: {
         name: 'nfc_app',
         authors: 'Muhammad Ahmad',
         description: 'NFC Manager Application'
       }
+    },
+    // macOS makers - ZIP only for now
+    {
+      name: '@electron-forge/maker-zip',
+      platforms: ['darwin']
     }
+    // DMG removed temporarily to avoid path issues
   ],
   plugins: [
     {
       name: '@electron-forge/plugin-auto-unpack-natives',
       config: {
-        // Force unpacking of all native dependencies
-        include: [
-          'nfc-pcsc/**',
-          '@serialport/**', 
-          'bindings/**',
-          'prebuild-install/**'
-        ],
+        // Explicitly unpack nfc-pcsc native modules and dependencies
+        include: ['nfc-pcsc', '@serialport/**'],
       },
     },
     new FusesPlugin({
@@ -81,7 +59,7 @@ export default {
       [FuseV1Options.EnableNodeOptionsEnvironmentVariable]: false,
       [FuseV1Options.EnableNodeCliInspectArguments]: false,
       [FuseV1Options.EnableEmbeddedAsarIntegrityValidation]: true,
-      [FuseV1Options.OnlyLoadAppFromAsar]: false, // Changed to false for native modules
+      [FuseV1Options.OnlyLoadAppFromAsar]: true,
     }),
   ],
 };
