@@ -9,9 +9,17 @@ export default {
     // macOS specific options
     appBundleId: 'com.muhammadahmad.nfcapp',
     appCategoryType: 'public.app-category.utilities',
-    ignore: [/\.git/, /node_modules/, /src/],
+    ignore: [/\.git/, /node_modules\/(?!nfc-pcsc)/, /src/],
+    // Ensure native modules are properly included
+    afterCopy: [(buildPath, electronVersion, platform, arch, callback) => {
+      console.log(`Packaging for ${platform}-${arch}`);
+      callback();
+    }],
   },
-  rebuildConfig: {},
+  rebuildConfig: {
+    buildFromSource: false,
+    onlyModules: ['nfc-pcsc'],
+  },
   makers: [
     // Windows makers
     {
@@ -36,7 +44,10 @@ export default {
   plugins: [
     {
       name: '@electron-forge/plugin-auto-unpack-natives',
-      config: {},
+      config: {
+        // Explicitly unpack nfc-pcsc native modules
+        include: ['nfc-pcsc'],
+      },
     },
     new FusesPlugin({
       version: FuseVersion.V1,

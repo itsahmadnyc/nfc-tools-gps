@@ -14,12 +14,13 @@
     "preview": "vite preview",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "make-mac": "npm run build && electron-forge make --platform=darwin",
-    "make-win": "npm run build && electron-forge make --platform=win32",
-    "make-all": "npm run build && electron-forge make",
+    "make-mac": "npm run build && npm run rebuild-native && electron-forge make --platform=darwin",
+    "make-win": "npm run build && npm run rebuild-native && electron-forge make --platform=win32",
+    "make-all": "npm run build && npm run rebuild-native && electron-forge make",
     "electron": "electron .",
     "start": "concurrently \"vite\" \"wait-on http://localhost:3000 && electron .\"",
-    "postinstall": "electron-builder install-app-deps"
+    "rebuild-native": "electron-rebuild -f -w nfc-pcsc",
+    "postinstall": "npm run rebuild-native"
   },
   "dependencies": {
     "@anthropic-ai/claude-code": "^1.0.68",
@@ -51,6 +52,7 @@
     "@vitejs/plugin-react": "^4.6.0",
     "electron": "^37.2.3",
     "electron-builder": "^24.13.3",
+    "electron-rebuild": "^3.2.9",
     "eslint": "^9.30.1",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
