@@ -4,14 +4,14 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 export default {
   packagerConfig: {
     asar: {
-      unpack: "**/{nfc-pcsc,@serialport}/**"
+      unpack: "**/{nfc-pcsc,@pokusew,@serialport}/**"
     },
     name: 'NFC Electron App',
     executableName: 'nfc-app',
     // macOS specific options
     appBundleId: 'com.muhammadahmad.nfcapp',
     appCategoryType: 'public.app-category.utilities',
-    ignore: [/\.git/, /node_modules\/(?!(nfc-pcsc|@serialport))/, /src/],
+    ignore: [/\.git/, /node_modules\/(?!(nfc-pcsc|@pokusew|@serialport))/, /src/],
     // Ensure native modules are properly included
     afterCopy: [(buildPath, electronVersion, platform, arch, callback) => {
       console.log(`Packaging for ${platform}-${arch}`);
@@ -48,8 +48,8 @@ export default {
     {
       name: '@electron-forge/plugin-auto-unpack-natives',
       config: {
-        // Explicitly unpack nfc-pcsc native modules and dependencies
-        include: ['nfc-pcsc', '@serialport/**'],
+        // Explicitly unpack nfc-pcsc native modules and all dependencies
+        include: ['nfc-pcsc', '@pokusew/**', '@serialport/**'],
       },
     },
     new FusesPlugin({

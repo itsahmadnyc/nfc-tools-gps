@@ -19,8 +19,8 @@
     "make-all": "npm run build && npm run rebuild-native && electron-forge make",
     "electron": "electron .",
     "start": "concurrently \"vite\" \"wait-on http://localhost:3000 && electron .\"",
-    "rebuild-native": "npx @electron/rebuild -f -w nfc-pcsc",
-    "postinstall": "npx @electron/rebuild -f -w nfc-pcsc || echo 'Native rebuild failed, continuing...'"
+    "rebuild-native": "npx @electron/rebuild -f -w nfc-pcsc,@pokusew/pcsclite",
+    "postinstall": "npx @electron/rebuild -f -w nfc-pcsc,@pokusew/pcsclite || echo 'Native rebuild failed, continuing...'"
   },
   "dependencies": {
     "@anthropic-ai/claude-code": "^1.0.68",
