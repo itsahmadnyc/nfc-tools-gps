@@ -124,11 +124,17 @@ const initializeApp = async () => {
   // Load NFC handler dynamically FIRST
   try {
     console.log('📦 Loading NFC Handler module...');
+    console.log('🔍 Current working directory:', process.cwd());
+    console.log('🔍 __dirname:', __dirname);
+    console.log('🔍 App packaged:', app.isPackaged);
+    console.log('🔍 Resources path:', process.resourcesPath);
+    
     const nfcModule = await import('./nfc-handler.js');
     ElectronNFCHandler = nfcModule.default;
     console.log('✅ NFC Handler module loaded successfully');
   } catch (error) {
     console.error('❌ NFC Handler not found, will continue without NFC functionality:', error.message);
+    console.error('❌ Error stack:', error.stack);
     nfcLoadError = error.message;
   }
   

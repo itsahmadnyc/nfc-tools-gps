@@ -1,5 +1,21 @@
 import { ipcMain, BrowserWindow } from 'electron';
-import { NFC } from 'nfc-pcsc';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+console.log('🔍 NFC Handler: Module loading started...');
+console.log('🔍 NFC Handler: Current file:', fileURLToPath(import.meta.url));
+
+let NFC;
+try {
+  console.log('📦 Attempting to import nfc-pcsc...');
+  const nfcPcsc = await import('nfc-pcsc');
+  NFC = nfcPcsc.NFC;
+  console.log('✅ nfc-pcsc imported successfully');
+} catch (importError) {
+  console.error('❌ Failed to import nfc-pcsc:', importError.message);
+  console.error('❌ Import error stack:', importError.stack);
+  throw new Error(`Failed to import nfc-pcsc: ${importError.message}`);
+}
 
 class ElectronNFCHandler {
   constructor() {
