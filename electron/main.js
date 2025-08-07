@@ -139,8 +139,19 @@ const initializeApp = async () => {
       nfcHandler = new ElectronNFCHandler();
       console.log('✅ NFC Handler initialized successfully');
       console.log('📋 IPC handlers should now be registered');
+      
+      // Verify handlers are registered by listing them
+      console.log('🔍 Verifying IPC handlers are registered...');
+      const { ipcMain } = await import('electron');
+      const handlerNames = ['nfc-start', 'nfc-stop', 'nfc-status', 'nfc-read-page-text', 'nfc-write-page-text', 'nfc-get-card-info', 'nfc-set-page-config'];
+      handlerNames.forEach(name => {
+        const hasHandler = ipcMain.listenerCount(name) > 0;
+        console.log(`📋 Handler '${name}': ${hasHandler ? '✅ Registered' : '❌ Missing'}`);
+      });
+      
     } catch (error) {
       console.error('❌ Failed to initialize NFC Handler:', error.message);
+      console.error('Stack trace:', error.stack);
       console.log('💡 Make sure nfc-pcsc is installed: npm install nfc-pcsc');
       nfcLoadError = error.message;
       // Continue without NFC functionality
@@ -149,8 +160,47 @@ const initializeApp = async () => {
     console.log('📝 Running without NFC functionality' + (nfcLoadError ? `: ${nfcLoadError}` : ''));
   }
   
-  // Small delay to ensure IPC handlers are fully registered
-  await new Promise(resolve => setTimeout(resolve, 100));
+  // Add fallback handlers for cases where NFC handler isn't available
+  if (!nfcHandler) {
+    console.log('🛡️ Setting up fallback NFC handlers...');
+    const { ipcMain } = await import('electron');
+    
+    const fallbackResponse = {
+      success: false,
+      error: nfcLoadError || 'NFC functionality not available - NFC handler failed to load'
+    };
+    
+    const nfcHandlers = [
+      'nfc-start', 'nfc-stop', 'nfc-status', 'nfc-read-page-text', 
+      'nfc-write-page-text', 'nfc-get-card-info', 'nfc-set-page-config'
+    ];
+    
+    nfcHandlers.forEach(handlerName => {
+      if (ipcMain.listenerCount(handlerName) === 0) {
+        ipcMain.handle(handlerName, async () => {
+          console.log(`⚠️ Fallback handler called for '${handlerName}' - NFC not available`);
+          return fallbackResponse;
+        });
+        console.log(`🛡️ Fallback handler registered for '${handlerName}'`);
+      }
+    });
+  }
+  
+  // Longer delay to ensure IPC handlers are fully registered
+  console.log('⏳ Waiting for IPC handlers to be fully registered...');
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  // Final verification
+  console.log('🔍 Final IPC handler verification...');
+  const { ipcMain } = await import('electron');
+  const finalHandlerNames = ['nfc-start', 'nfc-stop', 'nfc-status', 'nfc-read-page-text', 'nfc-write-page-text', 'nfc-get-card-info', 'nfc-set-page-config'];
+  const missingHandlers = finalHandlerNames.filter(name => ipcMain.listenerCount(name) === 0);
+  
+  if (missingHandlers.length > 0) {
+    console.error('❌ Missing handlers after initialization:', missingHandlers);
+  } else {
+    console.log('✅ All required IPC handlers are registered');
+  }
   
   // Now create the window
   console.log('🪟 Creating main window...');

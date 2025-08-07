@@ -3,7 +3,18 @@ import { NFC } from 'nfc-pcsc';
 
 class ElectronNFCHandler {
   constructor() {
-    this.nfc = new NFC();
+    console.log('🏗️ Creating ElectronNFCHandler instance...');
+    
+    try {
+      console.log('📦 Initializing NFC instance from nfc-pcsc...');
+      this.nfc = new NFC();
+      console.log('✅ NFC instance created successfully');
+    } catch (error) {
+      console.error('❌ Failed to create NFC instance:', error.message);
+      console.error('Stack:', error.stack);
+      throw error;
+    }
+    
     this.isInitialized = false;
     this.currentReader = null;
     this.currentCard = null;
@@ -46,8 +57,13 @@ class ElectronNFCHandler {
     // Default to page 4
     this.currentPageConfig = this.pageConfigs['PAGE_4'];
     
+    console.log('🔧 Setting up IPC handlers...');
     this.setupIPC();
+    console.log('✅ IPC handlers setup completed');
+    
+    console.log('🚀 Initializing NFC system...');
     this.init();
+    console.log('✅ NFC system initialization completed');
   }
 
   init() {
@@ -207,8 +223,11 @@ class ElectronNFCHandler {
   }
 
   setupIPC() {
+    console.log('📋 Registering IPC handlers...');
+    
     // Start NFC
     ipcMain.handle('nfc-start', async () => {
+      console.log('📡 IPC: nfc-start called');
       try {
         if (!this.isInitialized) {
           this.init();
@@ -221,6 +240,7 @@ class ElectronNFCHandler {
 
     // Stop NFC
     ipcMain.handle('nfc-stop', async () => {
+      console.log('📡 IPC: nfc-stop called');
       try {
         return { success: true };
       } catch (error) {
@@ -230,6 +250,7 @@ class ElectronNFCHandler {
 
     // Get NFC status
     ipcMain.handle('nfc-status', async () => {
+      console.log('📡 IPC: nfc-status called');
       return {
         initialized: this.isInitialized,
         readers: this.readers,
@@ -256,8 +277,11 @@ class ElectronNFCHandler {
 
     // Set page configuration
     ipcMain.handle('nfc-set-page-config', async (event, configName) => {
+      console.log('📡 IPC: nfc-set-page-config called');
       return await this.setPageConfig(configName);
     });
+    
+    console.log('📋 All IPC handlers registered successfully');
   }
 
   async setPageConfig(configName) {
