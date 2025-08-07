@@ -129,12 +129,58 @@ const initializeApp = async () => {
     console.log('🔍 App packaged:', app.isPackaged);
     console.log('🔍 Resources path:', process.resourcesPath);
     
-    const nfcModule = await import('./nfc-handler.js');
+    // Try different import strategies for packaged vs dev
+    let nfcModule;
+    if (app.isPackaged) {
+      // For packaged apps, try to load from unpacked location
+      const unpackedPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'electron', 'nfc-handler.js');
+      const asarPath = path.join(__dirname, 'nfc-handler.js');
+      
+      console.log('📦 Packaged app - trying unpacked path:', unpackedPath);
+      if (fs.existsSync(unpackedPath)) {
+        nfcModule = await import(unpackedPath);
+      } else {
+        console.log('📦 Unpacked path not found, trying asar path:', asarPath);
+        nfcModule = await import(asarPath);
+      }
+    } else {
+      // Development mode
+      nfcModule = await import('./nfc-handler.js');
+    }
+    
     ElectronNFCHandler = nfcModule.default;
     console.log('✅ NFC Handler module loaded successfully');
   } catch (error) {
     console.error('❌ NFC Handler not found, will continue without NFC functionality:', error.message);
     console.error('❌ Error stack:', error.stack);
+    
+    // Log additional debugging info
+    console.log('🔍 Debug: Attempting to locate nfc-pcsc module...');
+    try {
+      const nfcPcscPath = require.resolve('nfc-pcsc');
+      console.log('📍 nfc-pcsc found at:', nfcPcscPath);
+    } catch (resolveError) {
+      console.log('❌ nfc-pcsc not found in require.resolve:', resolveError.message);
+    }
+    
+    // Check if nfc-pcsc exists in node_modules
+    const nodeModulesPath = app.isPackaged 
+      ? path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules')
+      : path.join(__dirname, '../node_modules');
+      
+    const nfcPcscPath = path.join(nodeModulesPath, 'nfc-pcsc');
+    console.log('🔍 Checking for nfc-pcsc at:', nfcPcscPath);
+    console.log('📁 nfc-pcsc exists:', fs.existsSync(nfcPcscPath));
+    
+    if (fs.existsSync(nfcPcscPath)) {
+      const packagePath = path.join(nfcPcscPath, 'package.json');
+      if (fs.existsSync(packagePath)) {
+        const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+        console.log('📦 nfc-pcsc version:', packageJson.version);
+        console.log('📦 nfc-pcsc main:', packageJson.main);
+      }
+    }
+    
     nfcLoadError = error.message;
   }
   
@@ -173,7 +219,13 @@ const initializeApp = async () => {
     
     const fallbackResponse = {
       success: false,
-      error: nfcLoadError || 'NFC functionality not available - NFC handler failed to load'
+      error: nfcLoadError || 'NFC functionality not available - NFC handler failed to load',
+      troubleshooting: [
+        'Make sure nfc-pcsc is properly installed',
+        'Run: npm run rebuild-native',
+        'Check if PC/SC daemon is running on your system',
+        'Ensure NFC reader is connected and recognized by the system'
+      ]
     };
     
     const nfcHandlers = [
