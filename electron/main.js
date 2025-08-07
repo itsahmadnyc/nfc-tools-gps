@@ -8,15 +8,9 @@ import fs from 'fs';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Import the NFC handler
+// Import the NFC handler synchronously
 let ElectronNFCHandler;
-try {
-  const nfcModule = await import('./nfc-handler.js');
-  ElectronNFCHandler = nfcModule.default;
-  console.log('✅ NFC Handler module loaded successfully');
-} catch (error) {
-  console.error('❌ NFC Handler not found, will load without NFC functionality:', error.message);
-}
+let nfcLoadError = null;
 
 let mainWindow;
 let nfcHandler;
@@ -127,7 +121,18 @@ const createWindow = () => {
 const initializeApp = async () => {
   console.log('🚀 Initializing application...');
   
-  // Initialize NFC handler FIRST - before creating any windows
+  // Load NFC handler dynamically FIRST
+  try {
+    console.log('📦 Loading NFC Handler module...');
+    const nfcModule = await import('./nfc-handler.js');
+    ElectronNFCHandler = nfcModule.default;
+    console.log('✅ NFC Handler module loaded successfully');
+  } catch (error) {
+    console.error('❌ NFC Handler not found, will continue without NFC functionality:', error.message);
+    nfcLoadError = error.message;
+  }
+  
+  // Initialize NFC handler SECOND - after loading the module
   if (ElectronNFCHandler) {
     try {
       console.log('🔧 Initializing NFC Handler...');
@@ -137,10 +142,11 @@ const initializeApp = async () => {
     } catch (error) {
       console.error('❌ Failed to initialize NFC Handler:', error.message);
       console.log('💡 Make sure nfc-pcsc is installed: npm install nfc-pcsc');
+      nfcLoadError = error.message;
       // Continue without NFC functionality
     }
   } else {
-    console.log('📝 Running without NFC functionality');
+    console.log('📝 Running without NFC functionality' + (nfcLoadError ? `: ${nfcLoadError}` : ''));
   }
   
   // Small delay to ensure IPC handlers are fully registered
