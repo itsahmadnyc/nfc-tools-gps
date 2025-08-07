@@ -43,13 +43,7 @@ export default {
     // DMG removed temporarily to avoid path issues
   ],
   plugins: [
-    {
-      name: '@electron-forge/plugin-auto-unpack-natives',
-      config: {
-        // Explicitly unpack nfc-pcsc native modules and all dependencies
-        include: ['nfc-pcsc', '@pokusew/**', '@serialport/**', 'bindings', 'node-addon-api'],
-      },
-    },
+    // Removed AutoUnpackNatives plugin since we're not using ASAR
     new FusesPlugin({
       version: FuseVersion.V1,
       [FuseV1Options.RunAsNode]: false,
