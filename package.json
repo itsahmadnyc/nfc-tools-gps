@@ -19,8 +19,8 @@
     "make-all": "npm run build && npm run rebuild-native && electron-forge make",
     "electron": "electron .",
     "start": "concurrently \"vite\" \"wait-on http://localhost:3000 && electron .\"",
-    "rebuild-native": "electron-rebuild -f -w nfc-pcsc",
-    "postinstall": "npm run rebuild-native"
+    "rebuild-native": "@electron/rebuild -f -w nfc-pcsc",
+    "postinstall": "@electron/rebuild -f -w nfc-pcsc || echo 'Native rebuild failed, continuing...'"
   },
   "dependencies": {
     "@anthropic-ai/claude-code": "^1.0.68",
@@ -51,8 +51,7 @@
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.6.0",
     "electron": "^37.2.3",
-    "electron-builder": "^24.13.3",
-    "electron-rebuild": "^3.2.9",
+    "@electron/rebuild": "^3.6.0",
     "eslint": "^9.30.1",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
