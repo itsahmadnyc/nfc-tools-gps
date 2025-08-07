@@ -6,9 +6,14 @@ export default {
     asar: true,
     name: 'NFC Electron App',
     executableName: 'nfc-app',
+    // macOS specific options
+    appBundleId: 'com.muhammadahmad.nfcapp',
+    appCategoryType: 'public.app-category.utilities',
+    ignore: [/\.git/, /node_modules/, /src/],
   },
   rebuildConfig: {},
   makers: [
+    // Windows makers
     {
       name: '@electron-forge/maker-zip',
       platforms: ['win32']
@@ -20,7 +25,13 @@ export default {
         authors: 'Muhammad Ahmad',
         description: 'NFC Manager Application'
       }
+    },
+    // macOS makers - ZIP only for now
+    {
+      name: '@electron-forge/maker-zip',
+      platforms: ['darwin']
     }
+    // DMG removed temporarily to avoid path issues
   ],
   plugins: [
     {

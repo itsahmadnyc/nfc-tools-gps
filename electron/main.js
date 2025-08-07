@@ -13,8 +13,9 @@ let ElectronNFCHandler;
 try {
   const nfcModule = await import('./nfc-handler.js');
   ElectronNFCHandler = nfcModule.default;
+  console.log('✅ NFC Handler module loaded successfully');
 } catch (error) {
-  console.error('NFC Handler not found, will load without NFC functionality');
+  console.error('❌ NFC Handler not found, will load without NFC functionality:', error.message);
 }
 
 let mainWindow;
@@ -117,30 +118,44 @@ const createWindow = () => {
     }
   }
 
-  // Remove DevTools since we're not checking for development
-  // mainWindow.webContents.openDevTools();
-
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 };
 
-// This method will be called when Electron has finished initialization
-app.whenReady().then(async () => {
-  createWindow();
+// Initialize NFC handler first, then create window
+const initializeApp = async () => {
+  console.log('🚀 Initializing application...');
   
-  // Initialize NFC handler if available
+  // Initialize NFC handler FIRST - before creating any windows
   if (ElectronNFCHandler) {
     try {
+      console.log('🔧 Initializing NFC Handler...');
       nfcHandler = new ElectronNFCHandler();
       console.log('✅ NFC Handler initialized successfully');
+      console.log('📋 IPC handlers should now be registered');
     } catch (error) {
       console.error('❌ Failed to initialize NFC Handler:', error.message);
       console.log('💡 Make sure nfc-pcsc is installed: npm install nfc-pcsc');
+      // Continue without NFC functionality
     }
   } else {
     console.log('📝 Running without NFC functionality');
   }
+  
+  // Small delay to ensure IPC handlers are fully registered
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  // Now create the window
+  console.log('🪟 Creating main window...');
+  createWindow();
+  
+  console.log('✅ Application initialization complete');
+};
+
+// This method will be called when Electron has finished initialization
+app.whenReady().then(async () => {
+  await initializeApp();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -153,6 +168,7 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     if (nfcHandler) {
+      console.log('🛑 Shutting down NFC Handler...');
       nfcHandler.shutdown();
     }
     app.quit();
@@ -161,6 +177,7 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   if (nfcHandler) {
+    console.log('🛑 App quitting - shutting down NFC Handler...');
     nfcHandler.shutdown();
   }
 });
