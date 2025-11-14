@@ -9,7 +9,7 @@ const CardReader = ({ addLog }) => {
   const [autoReadEnabled, setAutoReadEnabled] = useState(true);
   const [cardInfo, setCardInfo] = useState(null);
 
-  const API_ENDPOINT = 'https://gps-api.jeuxtesting.com/api/event/checkin-checkout';
+  const API_ENDPOINT = 'https://apis.globalpokerstaff.com/api/event/checkin-checkout';
 
   // Text-to-speech function
   const speak = (text, success = true) => {

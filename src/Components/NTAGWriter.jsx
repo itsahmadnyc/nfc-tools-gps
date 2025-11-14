@@ -22,7 +22,7 @@ const CardWriter = ({ addLog }) => {
     addLog('Loading users from API...', 'info');
     
     try {
-      const response = await axios.get('https://gps-api.jeuxtesting.com/api/users-for-nfc');
+      const response = await axios.get('https://apis.globalpokerstaff.com/api/users-for-nfc');
       
       if (response.data.success) {
         setUsers(response.data.data);
