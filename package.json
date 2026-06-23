@@ -15,7 +15,7 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "make-mac": "npm run build && npm run rebuild-native && electron-forge make --platform=darwin",
-    "make-win": "npm run build && npm run rebuild-native && electron-forge make --platform=win32",
+    "make-win": "npm run build && npm run rebuild-native && electron-forge make --platform=win32 --arch=x64",
     "make-all": "npm run build && npm run rebuild-native && electron-forge make",
     "electron": "electron .",
     "start": "concurrently \"vite\" \"wait-on http://localhost:3000 && electron .\"",

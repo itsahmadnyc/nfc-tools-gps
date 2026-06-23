@@ -61,8 +61,8 @@ const CardWriter = ({ addLog }) => {
   // Filter users based on search term
   const filteredUsers = users.filter(user => 
     `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.phone.includes(searchTerm)
+    (user.email?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
+    (user.phone ?? '').includes(searchTerm)
   );
 
   const selectUser = (user) => {

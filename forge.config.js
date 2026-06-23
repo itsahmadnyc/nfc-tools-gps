@@ -27,14 +27,6 @@ export default {
       name: '@electron-forge/maker-zip',
       platforms: ['win32']
     },
-    {
-      name: '@electron-forge/maker-squirrel',
-      config: {
-        name: 'nfc_app',
-        authors: 'Muhammad Ahmad',
-        description: 'NFC Manager Application'
-      }
-    },
     // macOS makers - ZIP only for now
     {
       name: '@electron-forge/maker-zip',
